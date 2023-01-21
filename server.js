@@ -6,6 +6,9 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
+
 // create app
 const app = express();
 
@@ -16,41 +19,18 @@ app.use(helmet());
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
-// co:here
+// libraries
 const cohere = require("cohere-ai");
 cohere.init(process.env.COHERE_API_KEY);
 
 /*
- * req.body = {
+ * example req.body...
+ * {
  *   prompt: "sword"
  * }
  */
 app.post("/api/object", async (req, res, next) => {
   try {
-    // """
-    // This program generates a startup idea and name given the industry.
-
-    // Industry: Workplace
-    // Startup Idea: A platform that generates slide deck contents automatically based on a given outline
-    // Startup Name: Deckerize
-    // --
-    // Industry: Home Decor
-    // Startup Idea: An app that calculates the best position of your indoor plants for your apartment
-    // Startup Name: Planteasy
-    // --
-    // Industry: Healthcare
-    // Startup Idea: A hearing aid for the elderly that automatically adjusts its levels and with a battery lasting a whole week
-    // Startup Name: Hearspan
-
-    // --
-    // Industry: Education
-    // Startup Idea: An online school that lets students mix and match their own curriculum based on their interests and goals
-    // Startup Name: Prime Age
-
-    // --
-    // Industry: Productivity
-    // Startup Idea:"""
-
     const { prompt } = req.body;
     const {
       body: { generations },
@@ -95,9 +75,10 @@ app.post("/api/object", async (req, res, next) => {
     });
     const generation = generations[0].text.split("--")[0].trim();
 
-    console.log(JSON.stringify({ r: generation }));
+    const { stdout, stderr } = await exec("python3 ./test.py");
+    
 
-    res.status(200).send({ generations });
+    res.status(200).send({ generation });
   } catch (err) {
     next(err);
   }
