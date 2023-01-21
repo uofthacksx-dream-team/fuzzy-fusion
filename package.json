@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon -L server"
+    "dev": "nodemon -L server",
+    "test": "node test"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "helmet": "^6.0.1",
+    "node-fetch": "^2.6.1",
     "nodemon": "^2.0.20"
   }
 }

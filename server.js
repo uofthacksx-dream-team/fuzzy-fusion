@@ -75,8 +75,9 @@ app.post("/api/object", async (req, res, next) => {
     });
     const generation = generations[0].text.split("--")[0].trim();
 
-    const { stdout, stderr } = await exec("python3 ./test.py");
-    
+    const { stdout, stderr } = await exec(
+      "python3 ./test.py"
+    );
 
     res.status(200).send({ generation });
   } catch (err) {
