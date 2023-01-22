@@ -9,6 +9,7 @@ const bodyParser = require("body-parser");
 const FormData = require("form-data");
 const fs = require("fs/promises");
 const fetch = require("node-fetch");
+const { v4: uuidv4 } = require("uuid");
 
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
@@ -76,27 +77,33 @@ app.post("/api/object", async (req, res, next) => {
     });
     const generation = generations[0].text.split("--")[0].trim();
 
-    const { stdout, stderr } = await exec("python3 ./test.py");
+    const uuid = uuidv4();
+
+    const { stdout, stderr } = await exec(`python3 ./test.py`);
     // python3
 
-    const form = new FormData();
-    const file = await fs.readFile("./test.txt");
-    form.append("file", file.buffer, "mesh.obj");
+    const url = {};
+    Promise.all(
+      [`${uuid}/mesh.obj`, `${uuid}/mesh.mtl`].map(async (filepath) => {
+        const ext = filepath.slice(filepath.length - 3);
 
-    const res = await fetch("//api.estuary.tech/content/add", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-      },
-      body: form,
-    });
-    const { cid } = await res.json();
+        const form = new FormData();
+        const file = await fs.readFile(filepath);
+        form.append("file", file.buffer, `${uuid}.${ext}`);
 
-    res.status(200).send({
-      prompt,
-      generation,
-      obj: `//api.estuary.tech/content/:id${cid}`,
-    });
+        const res = await fetch("//api.estuary.tech/content/add", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          body: form,
+        });
+        const { cid } = await res.json();
+        url[ext] = `//api.estuary.tech/content/${cid}`;
+      })
+    );
+
+    res.status(200).send({ prompt, generation, url });
   } catch (err) {
     next(err);
   }
