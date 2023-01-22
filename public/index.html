@@ -4,13 +4,14 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src * self blob: data: gap:; style-src * self 'unsafe-inline' blob: data: gap:; script-src * 'self' 'unsafe-eval' 'unsafe-inline' blob: data: gap:; object-src * 'self' blob: data: gap:; img-src * self 'unsafe-inline' blob: data: gap:; connect-src self * 'unsafe-inline' blob: data: gap:; frame-src * self blob: data: gap:;">
     <title>Document</title>
     <link href="./styles.css" rel="stylesheet" />
   </head>
   <body>
     <div class="wrapper">
       <div class="wrapper-top">
-        <h1>Stable Dreamfusion</h1>
+        <h1>Fuzzy Fusion</h1>
       </div>
       <div class="wrapper-bottom">
         <form id="prompt-form" action="#">
@@ -19,15 +20,19 @@
             type="text"
             placeholder="a plush toy of a corgi nurse"
           />
-          <img src="./assets/arrow.svg"">
+          <img src="./assets/arrow.svg">
         </form>
         <div id="loader">
-          <div class="placeholder"></div>
+          <div class="placeholder">
+            <div class="spinner"></div>
+          </div>
           <canvas></canvas>
         </div>
         <div class="btns">
-          <button class="btn">Download</button>
-          <button class="btn" data-href="">Share</button>
+          <div class="tooltip">Link copied to clipboard!</div>
+          <a class="btn" href="#">Download</a>
+          <a class="btn" href="#" data-href="">Share</a>
+
         </div>
       </div>
     </div>

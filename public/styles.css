@@ -27,6 +27,23 @@
     }
   }
 
+  @keyframes rotating {
+    from {
+      -ms-transform: rotate(0deg);
+      -moz-transform: rotate(0deg);
+      -webkit-transform: rotate(0deg);
+      -o-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    to {
+      -ms-transform: rotate(360deg);
+      -moz-transform: rotate(360deg);
+      -webkit-transform: rotate(360deg);
+      -o-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
 body { font-family: "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue"; background: linear-gradient(270deg, #1fb0ff, #ffe663, #ff82f7, #69d8ff, #c84eff); background-size: 1000% 1000%; -webkit-animation: AnimationName 5s ease infinite; animation: AnimationName 5s ease infinite; }
 
 .wrapper { width: 1000px; border-radius: 50px; margin: auto; }
@@ -36,7 +53,8 @@ body { font-family: "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira
 .btn { border-radius: 10px; text-transform: uppercase; padding: 15px 30px; font-weight: bold; font-size: 16px; }
 
 #prompt-form { display: flex; align-items: center; position: relative; }
-#prompt-form img { opacity: 0.6; height: 35px; right: 20px; position: absolute; filter: invert(55%) sepia(9%) saturate(293%) hue-rotate(162deg) brightness(87%) contrast(89%); }
+body.loading #prompt { color: var(--color-fog); } 
+#prompt-form img { opacity: 0.45; height: 35px; right: 20px; position: absolute; filter: invert(55%) sepia(9%) saturate(293%) hue-rotate(162deg) brightness(87%) contrast(89%); }
 #prompt-form img:hover { cursor: pointer; }
 #prompt-form img.active { opacity: 1; }
 #prompt { background-color: #fff; border-radius: 25px; border: 1.5px solid var(--color-fog); padding: 10px 25px; font-size: 30px; width: 100%; }
@@ -44,7 +62,40 @@ body { font-family: "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira
 #prompt::placeholder { color: var(--color-fog); }
 
 
-.btns { display: flex; align-items: center; margin: 30px auto auto; width: fit-content; }
-.btn { margin-right: 20px; }
+.btns { display: flex; align-items: center; margin: 30px auto auto; width: fit-content; position: relative; justify-content: center; }
+.btn { margin-right: 20px; background-color: #fff; color: var(--color-stone); border: none; text-decoration: none; width: 100px;text-align: center; }
+.btn:last-child { margin-right: 0; }
 .btn:hover { cursor: pointer; }
 #loader { border-radius: 25px; height: 500px; background-color: #fff; margin-top: 30px; overflow: hidden; }
+body.loading #prompt-form img { opacity: 0.25; }
+body.loading #prompt-form img:hover { opacity: 0.25; cursor: default; }
+body.loading #prompt-form { color: var(--color-fog); }
+body.loading .placeholder { display: flex;  }
+.placeholder { width: 100%; height: 100%; display: flex; align-items: center; display: none; }
+.spinner {
+  opacity: 0.5;
+  margin: auto;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  border: 6px solid var(--color-fog);
+  border-top-color: var(--color-stone);
+  animation: rotating 2s linear infinite;
+}
+.tooltip.active { display: block; }
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: #281616cc;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: rgb(100 100 111 / 20%) 0px 7px 29px 0px;
+  top: -10px;
+  width: 250px;
+  color: #fff;
+  font-weight: normal;
+  cursor: default;
+  text-align: center;
+  left: 50%;
+  transform: translateX(-50%);
+}

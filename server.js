@@ -83,24 +83,26 @@ app.post("/api/object", async (req, res, next) => {
 
     const uuid = uuidv4();
 
-    res.status(200).send({ prompt, generation, id: uuid });
+    console.log({ prompt, generation, id: uuid })
+
+    res.send({ prompt, generation, id: uuid });
 
     // run model
-    await exec(
-      `python3 ./stable-dreamfusion/main.py --text ${generation} --workspace ${uuid} -O --iters 100 --w 100 --h 100`
+    console.log("start execution")
+    const {stdout, stderr} = await exec(
+      `python3 ./model/stable-dreamfusion/main.py --text "${generation}" --workspace "${uuid}" -O --iters 100 --w 100 --h 100`
     );
+    console.log(stdout, stderr);
     await exec(
-      `python3 ./stable-dreamfusion/main.py --workspace ${uuid} -O --test --save_mesh`
+      `python3 ./model/stable-dreamfusion/main.py --workspace "${uuid}" -O --test --save_mesh`
     );
-    // await exec(
-    //   `python3 ./stable-dreamfusion/main.py --text ${generation} --workspace ${uuid} -O --iters 1500 --w 100 --h 100`
-    // );
-    // await exec(
-    //   `python3 ./stable-dreamfusion/main.py --workspace ${uuid} -O --test --save_mesh`
-    // );
+    console.log("done execution")
+
+    const mtl = fs.readFileSync(`./${uuid}/mesh/mesh.mtl`);
+    fs.writeFileSync(`./${uuid}/mesh/mesh.mtl`, mtl.replace("albedo", uuid));
 
     glob(
-      `./stable-dreamfusion/${uuid}/results/*_rgb.mp4`,
+      `./${uuid}/results/*_rgb.mp4`,
       undefined,
       async (err, files) => {
         if (err) {
@@ -109,9 +111,9 @@ app.post("/api/object", async (req, res, next) => {
         const [file] = files;
         await Promise.all(
           [
-            `./stable-dreamfusion/${uuid}/mesh/mesh.obj`,
-            `./stable-dreamfusion/${uuid}/mesh/mesh.mtl`,
-            `./stable-dreamfusion/${uuid}/mesh/albedo.png`,
+            `./${uuid}/mesh/mesh.obj`,
+            `./${uuid}/mesh/mesh.mtl`,
+            `./${uuid}/mesh/albedo.png`,
             file,
           ].map(async (filepath) => {
             const ext = filepath.slice(filepath.length - 3);
@@ -119,17 +121,20 @@ app.post("/api/object", async (req, res, next) => {
             bucket.upload(filepath, { destination: `${uuid}.${ext}` });
           })
         );
+        console.log("DONE UPLOADING");
       }
     );
+
   } catch (err) {
     next(err);
   }
 });
 
 app.get("/api/object/:id", async (req, res, next) => {
+  console.log("polling...");
   try {
     const id = req.params.id;
-    console.log(bucket.name);
+    
     const done = (
       await Promise.all(
         [
@@ -164,13 +169,6 @@ app.use(async (err, req, res, next) => {
 });
 
 // serve static files
-app.use((req, res, next) => {
-  res.setHeader(
-    "Content-Security-Policy",
-    "default-src * self blob: data: gap:; style-src * self 'unsafe-inline' blob: data: gap:; script-src * 'self' 'unsafe-eval' 'unsafe-inline' blob: data: gap:; object-src * 'self' blob: data: gap:; img-src * self 'unsafe-inline' blob: data: gap:; connect-src self * 'unsafe-inline' blob: data: gap:; frame-src * self blob: data: gap:;"
-  );
-  next();
-});
 app.use(express.static(__dirname + "/public"));
 
 const port = process.env.PORT || "5000";

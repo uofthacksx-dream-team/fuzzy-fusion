@@ -5,8 +5,11 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 ("use strict");
 
+const DEBUG = false;
+
 $(function () {
   $("#prompt-form img").on("click tap", async () => {
+    $("body").addClass("loading");
     const prompt = $("#prompt").val();
     try {
       const res = await fetch("http://localhost:5000/api/object", {
@@ -19,29 +22,44 @@ $(function () {
       });
       const { id } = await res.json();
 
-      let urls;
-      const interval = setInterval(async () => {
-        urls = await fetch(`http://localhost:5000/api/object/${id}`);
-        if (urls.length) {
-          load(urls);
-          $(".btns .btn:first-child").attr("href", urls[0]);
-          $(".btns .btn:last-child").attr("data-href", urls[0]);
-          clearInterval(interval);
-        }
-        console.log(urls);
-      }, 10000);
-      load(urls);
+      if (DEBUG) {
+        load([
+          `https://storage.googleapis.com/fuzzy_fusion/456.obj`,
+          `https://storage.googleapis.com/fuzzy_fusion/456.mtl`,
+          `https://storage.googleapis.com/fuzzy_fusion/456.mp4`,
+        ]);
+      } else {
+        let urls;
+        const interval = setInterval(async () => {
+          console.log("called")
+          const res = await fetch(`http://localhost:5000/api/object/${id}`);
+          const json = await res.json();
+          urls = json.urls;
+          if (urls.length) {
+            load(urls);
+            clearInterval(interval);
+          }
+          console.log(urls);
+        }, 100000);
+      }
+
     } catch (err) {
       console.log(err);
     }
   });
 
   $(".btns .btn:last-child").on("click tap", function () {
+    console.log("here")
+    $(".tooltip").addClass("active");
+    setTimeout(() => { $(".tooltip").removeClass("active"); }, 3000);
     navigator.clipboard.writeText($(this).attr("data-href"));
     alert("Copied the text: " + copyText.value);
   });
 
   function load(urls) {
+    $("body").removeClass("loading");
+    $(".btns .btn:nth-child(2)").attr("href", urls[0]);
+    $(".btns .btn:last-child").attr("data-href", urls[0]);
     console.log(urls);
     const width = $("#loader").innerWidth();
     const height = $("#loader").innerHeight();
