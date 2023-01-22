@@ -6,11 +6,14 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
-const FormData = require("form-data");
-const fs = require("fs/promises");
 const glob = require("glob");
-const fetch = require("node-fetch");
 const { v4: uuidv4 } = require("uuid");
+const { Storage } = require("@google-cloud/storage");
+
+// use application default credentials
+const storage = new Storage();
+
+const bucket = storage.bucket("fuzzy_fusion");
 
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
@@ -80,47 +83,46 @@ app.post("/api/object", async (req, res, next) => {
 
     const uuid = uuidv4();
 
-    // run model
-    await exec(
-      `python3 ./stable-dreamfusion/main.py --text ${generation} --workspace ${uuid} -O --iters 1500 --w 100 --h 100`
-    );
-    await exec(
-      `python3 ./stable-dreamfusion/main.py --workspace ${uuid} -O --test --save_mesh`
-    );
+    res.status(200).send({ prompt, generation, url });
 
-    const url = {};
+    // run model
+    // await exec(
+    //   `python3 ./stable-dreamfusion/main.py --text ${generation} --workspace ${uuid} -O --iters 1500 --w 100 --h 100`
+    // );
+    // await exec(
+    //   `python3 ./stable-dreamfusion/main.py --workspace ${uuid} -O --test --save_mesh`
+    // );
+
     glob(
       `./stable-dreamfusion/${uuid}/results/*_rgb.mp4`,
       undefined,
-      async (err, file) => {
+      async (err, files) => {
         if (err) {
           throw err;
         }
+        const [file] = files;
         await Promise.all(
           [
-            `./stable-dreamfusion/${uuid}/mesh/mesh.obj`,
-            `./stable-dreamfusion/${uuid}/mesh/mesh.mtl`,
-            file,
+            // `./stable-dreamfusion/${uuid}/mesh/mesh.obj`,
+            // `./stable-dreamfusion/${uuid}/mesh/mesh.mtl`,
+            // file,
+            "./test.txt",
           ].map(async (filepath) => {
             const ext = filepath.slice(filepath.length - 3);
 
-            const form = new FormData();
-            const file = await fs.readFile(filepath);
-            form.append("file", file.buffer, `${uuid}.${ext}`);
-
-            const res = await fetch("//api.estuary.tech/content/add", {
-              method: "POST",
-              headers: {
-                Accept: "application/json",
-              },
-              body: form,
-            });
-            const { cid } = await res.json();
-            url[ext] = `//api.estuary.tech/content/${cid}`;
+            bucket.upload(filepath, { destination: `${uuid}.${ext}` });
           })
         );
       }
     );
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get("/api/object/:id/status", (req, res, next) => {
+  try {
+    storage.file("");
 
     res.status(200).send({ prompt, generation, url });
   } catch (err) {
@@ -128,12 +130,7 @@ app.post("/api/object", async (req, res, next) => {
   }
 });
 
-app.get("/api/objects", (req, res, next) => {
-  try {
-  } catch (err) {
-    next(err);
-  }
-});
+//`https://storage.googleapis.com/${bucket.name}/${uuid}.${ext}`;
 
 app.use(async (err, req, res, next) => {
   const status = err.status || 500;
