@@ -43,4 +43,8 @@ body { font-family: "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira
 #prompt:focus { outline: 0; }
 #prompt::placeholder { color: var(--color-fog); }
 
+
+.btns { display: flex; align-items: center; margin: 30px auto auto; width: fit-content; }
+.btn { margin-right: 20px; }
+.btn:hover { cursor: pointer; }
 #loader { border-radius: 25px; height: 500px; background-color: #fff; margin-top: 30px; overflow: hidden; }

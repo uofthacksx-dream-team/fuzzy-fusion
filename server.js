@@ -83,9 +83,15 @@ app.post("/api/object", async (req, res, next) => {
 
     const uuid = uuidv4();
 
-    res.status(200).send({ prompt, generation, url });
+    res.status(200).send({ prompt, generation, id: uuid });
 
     // run model
+    await exec(
+      `python3 ./stable-dreamfusion/main.py --text ${generation} --workspace ${uuid} -O --iters 100 --w 100 --h 100`
+    );
+    await exec(
+      `python3 ./stable-dreamfusion/main.py --workspace ${uuid} -O --test --save_mesh`
+    );
     // await exec(
     //   `python3 ./stable-dreamfusion/main.py --text ${generation} --workspace ${uuid} -O --iters 1500 --w 100 --h 100`
     // );
@@ -103,10 +109,10 @@ app.post("/api/object", async (req, res, next) => {
         const [file] = files;
         await Promise.all(
           [
-            // `./stable-dreamfusion/${uuid}/mesh/mesh.obj`,
-            // `./stable-dreamfusion/${uuid}/mesh/mesh.mtl`,
-            // file,
-            "./test.txt",
+            `./stable-dreamfusion/${uuid}/mesh/mesh.obj`,
+            `./stable-dreamfusion/${uuid}/mesh/mesh.mtl`,
+            `./stable-dreamfusion/${uuid}/mesh/albedo.png`,
+            file,
           ].map(async (filepath) => {
             const ext = filepath.slice(filepath.length - 3);
 
@@ -120,17 +126,37 @@ app.post("/api/object", async (req, res, next) => {
   }
 });
 
-app.get("/api/object/:id/status", (req, res, next) => {
+app.get("/api/object/:id", async (req, res, next) => {
   try {
-    storage.file("");
+    const id = req.params.id;
+    console.log(bucket.name);
+    const done = (
+      await Promise.all(
+        [
+          bucket.file(`${id}.obj`),
+          bucket.file(`${id}.mtl`),
+          bucket.file(`${id}.png`),
+          bucket.file(`${id}.mp4`),
+        ].map(async (file) => {
+          const [exists] = await file.exists();
+          return exists;
+        })
+      )
+    ).every((exists) => exists);
 
-    res.status(200).send({ prompt, generation, url });
+    res.status(200).send({
+      urls: done
+        ? [
+            `https://storage.googleapis.com/${bucket.name}/${id}.obj`,
+            `https://storage.googleapis.com/${bucket.name}/${id}.mtl`,
+            `https://storage.googleapis.com/${bucket.name}/${id}.mp4`,
+          ]
+        : [],
+    });
   } catch (err) {
     next(err);
   }
 });
-
-//`https://storage.googleapis.com/${bucket.name}/${uuid}.${ext}`;
 
 app.use(async (err, req, res, next) => {
   const status = err.status || 500;

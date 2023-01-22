@@ -6,9 +6,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 ("use strict");
 
 $(function () {
-  $("#prompt-form").on("submit", async () => {
+  $("#prompt-form img").on("click tap", async () => {
     const prompt = $("#prompt").val();
-    console.log(prompt);
     try {
       const res = await fetch("http://localhost:5000/api/object", {
         method: "POST",
@@ -16,13 +15,34 @@ $(function () {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: prompt }),
+        body: JSON.stringify({ prompt }),
       });
-      const json = await res.json();
-    } catch (err) {}
+      const { id } = await res.json();
+
+      let urls;
+      const interval = setInterval(async () => {
+        urls = await fetch(`http://localhost:5000/api/object/${id}`);
+        if (urls.length) {
+          load(urls);
+          $(".btns .btn:first-child").attr("href", urls[0]);
+          $(".btns .btn:last-child").attr("data-href", urls[0]);
+          clearInterval(interval);
+        }
+        console.log(urls);
+      }, 10000);
+      load(urls);
+    } catch (err) {
+      console.log(err);
+    }
   });
 
-  function loadOBJ() {
+  $(".btns .btn:last-child").on("click tap", function () {
+    navigator.clipboard.writeText($(this).attr("data-href"));
+    alert("Copied the text: " + copyText.value);
+  });
+
+  function load(urls) {
+    console.log(urls);
     const width = $("#loader").innerWidth();
     const height = $("#loader").innerHeight();
     const [canvas] = $("#loader canvas");
@@ -60,17 +80,14 @@ $(function () {
 
     const mtlLoader = new MTLLoader();
     mtlLoader.setMaterialOptions({ invertTrProperty: true });
-    mtlLoader.setPath("./assets/castle/");
     mtlLoader.load(
-      "mesh.mtl",
+      urls[1],
       (materials) => {
         materials.preload();
-        console.log(materials);
         const objLoader = new OBJLoader();
         objLoader.setMaterials(materials);
-        objLoader.setPath("./assets/castle/");
         objLoader.load(
-          "mesh.obj",
+          urls[0],
           (object) => {
             object.scale.set(10, 10, 10);
             scene.add(object);
@@ -87,5 +104,4 @@ $(function () {
       }
     );
   }
-  loadOBJ();
 });
