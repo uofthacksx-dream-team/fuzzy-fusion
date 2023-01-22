@@ -5,8 +5,41 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <link href="./styles.css" rel="stylesheet" />
   </head>
   <body>
-    lol
+    <div class="wrapper">
+      <div class="wrapper-top">
+        <h1>Stable Dreamfusion</h1>
+      </div>
+      <div class="wrapper-bottom">
+        <form id="prompt-form" action="#">
+          <input
+            id="prompt"
+            type="text"
+            placeholder="a plush toy of a corgi nurse"
+          />
+          <img src="./assets/arrow.svg"">
+        </form>
+        <div id="loader">
+          <div class="placeholder"></div>
+          <canvas></canvas>
+        </div>
+      </div>
+    </div>
+    <script
+      async
+      src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"
+    ></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.148.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.148.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="./jquery-3.6.3.min.js"></script>
+    <script src="./index.js" type="module"></script>
   </body>
 </html>

@@ -4,7 +4,6 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const helmet = require("helmet");
 
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
@@ -14,7 +13,6 @@ const app = express();
 
 // middleware
 app.use(cors());
-app.use(helmet());
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
@@ -75,9 +73,7 @@ app.post("/api/object", async (req, res, next) => {
     });
     const generation = generations[0].text.split("--")[0].trim();
 
-    const { stdout, stderr } = await exec(
-      "python3 ./test.py"
-    );
+    const { stdout, stderr } = await exec("python3 ./test.py");
 
     res.status(200).send({ generation });
   } catch (err) {
@@ -105,6 +101,13 @@ app.use(async (err, req, res, next) => {
 });
 
 // serve static files
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src * self blob: data: gap:; style-src * self 'unsafe-inline' blob: data: gap:; script-src * 'self' 'unsafe-eval' 'unsafe-inline' blob: data: gap:; object-src * 'self' blob: data: gap:; img-src * self 'unsafe-inline' blob: data: gap:; connect-src self * 'unsafe-inline' blob: data: gap:; frame-src * self blob: data: gap:;"
+  );
+  next();
+});
 app.use(express.static(__dirname + "/public"));
 
 const port = process.env.PORT || "5000";

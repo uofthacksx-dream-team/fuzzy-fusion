@@ -1,0 +1,46 @@
+:root {
+  --color-fog: #c6cfd6;
+  --color-stone: #767d82;
+}
+
+@-webkit-keyframes AnimationName {
+    0% {
+      background-position: 60% 0%;
+    }
+    50% {
+      background-position: 41% 100%;
+    }
+    100% {
+      background-position: 60% 0%;
+    }
+  }
+  
+  @keyframes AnimationName {
+    0% {
+      background-position: 60% 0%;
+    }
+    50% {
+      background-position: 41% 100%;
+    }
+    100% {
+      background-position: 60% 0%;
+    }
+  }
+
+body { font-family: "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue"; background: linear-gradient(270deg, #1fb0ff, #ffe663, #ff82f7, #69d8ff, #c84eff); background-size: 1000% 1000%; -webkit-animation: AnimationName 5s ease infinite; animation: AnimationName 5s ease infinite; }
+
+.wrapper { width: 1000px; border-radius: 50px; margin: auto; }
+.wrapper-top { color: #fff; font-size: 40px; display: flex; flex-direction: column; align-items: center; }
+.wrapper-bottom {}
+
+.btn { border-radius: 10px; text-transform: uppercase; padding: 15px 30px; font-weight: bold; font-size: 16px; }
+
+#prompt-form { display: flex; align-items: center; position: relative; }
+#prompt-form img { opacity: 0.6; height: 35px; right: 20px; position: absolute; filter: invert(55%) sepia(9%) saturate(293%) hue-rotate(162deg) brightness(87%) contrast(89%); }
+#prompt-form img:hover { cursor: pointer; }
+#prompt-form img.active { opacity: 1; }
+#prompt { background-color: #fff; border-radius: 25px; border: 1.5px solid var(--color-fog); padding: 10px 25px; font-size: 30px; width: 100%; }
+#prompt:focus { outline: 0; }
+#prompt::placeholder { color: var(--color-fog); }
+
+#loader { border-radius: 25px; height: 500px; background-color: #fff; margin-top: 30px; overflow: hidden; }
