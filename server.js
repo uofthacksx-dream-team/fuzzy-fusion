@@ -4,6 +4,11 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const bodyParser = require("body-parser");
+
+const FormData = require("form-data");
+const fs = require("fs/promises");
+const fetch = require("node-fetch");
 
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
@@ -13,8 +18,6 @@ const app = express();
 
 // middleware
 app.use(cors());
-
-const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
 // libraries
@@ -66,7 +69,7 @@ app.post("/api/object", async (req, res, next) => {
         Long Prompt: a white and black soccer ball stained with dirt and grass
         --
         Short Prompt: ${prompt}
-        Long Prompt: `, // prompt engineering
+        Long Prompt:`, // prompt engineering
       model: "xlarge",
       temperature: 0.8,
       stop_sequences: ["--"],
@@ -74,15 +77,26 @@ app.post("/api/object", async (req, res, next) => {
     const generation = generations[0].text.split("--")[0].trim();
 
     const { stdout, stderr } = await exec("python3 ./test.py");
+    // python3
 
-    res.status(200).send({ generation });
-  } catch (err) {
-    next(err);
-  }
-});
+    const form = new FormData();
+    const file = await fs.readFile("./test.txt");
+    form.append("file", file.buffer, "mesh.obj");
 
-app.get("/api/object", (req, res, next) => {
-  try {
+    const res = await fetch("//api.estuary.tech/content/add", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+      body: form,
+    });
+    const { cid } = await res.json();
+
+    res.status(200).send({
+      prompt,
+      generation,
+      obj: `//api.estuary.tech/content/:id${cid}`,
+    });
   } catch (err) {
     next(err);
   }
