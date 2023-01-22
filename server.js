@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 
 const FormData = require("form-data");
 const fs = require("fs/promises");
+const glob = require("glob");
 const fetch = require("node-fetch");
 const { v4: uuidv4 } = require("uuid");
 
@@ -79,28 +80,46 @@ app.post("/api/object", async (req, res, next) => {
 
     const uuid = uuidv4();
 
-    const { stdout, stderr } = await exec(`python3 ./test.py`);
-    // python3
+    // run model
+    await exec(
+      `python3 ./stable-dreamfusion/main.py --text ${generation} --workspace ${uuid} -O --iters 1500 --w 100 --h 100`
+    );
+    await exec(
+      `python3 ./stable-dreamfusion/main.py --workspace ${uuid} -O --test --save_mesh`
+    );
 
     const url = {};
-    Promise.all(
-      [`${uuid}/mesh.obj`, `${uuid}/mesh.mtl`].map(async (filepath) => {
-        const ext = filepath.slice(filepath.length - 3);
+    glob(
+      `./stable-dreamfusion/${uuid}/results/*_rgb.mp4`,
+      undefined,
+      async (err, file) => {
+        if (err) {
+          throw err;
+        }
+        await Promise.all(
+          [
+            `./stable-dreamfusion/${uuid}/mesh/mesh.obj`,
+            `./stable-dreamfusion/${uuid}/mesh/mesh.mtl`,
+            file,
+          ].map(async (filepath) => {
+            const ext = filepath.slice(filepath.length - 3);
 
-        const form = new FormData();
-        const file = await fs.readFile(filepath);
-        form.append("file", file.buffer, `${uuid}.${ext}`);
+            const form = new FormData();
+            const file = await fs.readFile(filepath);
+            form.append("file", file.buffer, `${uuid}.${ext}`);
 
-        const res = await fetch("//api.estuary.tech/content/add", {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-          },
-          body: form,
-        });
-        const { cid } = await res.json();
-        url[ext] = `//api.estuary.tech/content/${cid}`;
-      })
+            const res = await fetch("//api.estuary.tech/content/add", {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+              },
+              body: form,
+            });
+            const { cid } = await res.json();
+            url[ext] = `//api.estuary.tech/content/${cid}`;
+          })
+        );
+      }
     );
 
     res.status(200).send({ prompt, generation, url });
