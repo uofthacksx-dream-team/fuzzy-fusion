@@ -1,0 +1,3 @@
+[submodule "model/stable-dreamfusion"]
+	path = model/stable-dreamfusion
+	url = git@github.com:ashawkey/stable-dreamfusion.git
