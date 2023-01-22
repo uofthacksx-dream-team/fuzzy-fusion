@@ -7,16 +7,9 @@ npm i # to install dependencies.
 npm run dev #to run the application.
 ```
 ## Demo
-![corgi wizard](markdown_assets/corgi.gif)
-corgi wizard
-![floating castle](markdown_assets/floating_castle.gif)
-floating castle
-![spaceship](markdown_assets/spaceship.gif)
-spaceship
-![3 ear panda](markdown_assets/3_ear_panda.gif)
-three ears panda
-![burger](markdown_assets/burger.gif)
-burger
+| ![corgi wizard](markdown_assets/corgi.gif)  | ![floating castle](markdown_assets/floating_castle.gif)  |  ![spaceship](markdown_assets/spaceship.gif) |  ![3 ear panda](markdown_assets/3_ear_panda.gif) |  ![burger](markdown_assets/burger.gif) |
+|---|---|---|---|---|
+| corgi wizard  | floating castle  | spaceship  | three ears panda  |  burger |
 
 ## Inspiration
 The inspiration of this project came from the contour design on the gift bag design of UofTHacks-X. A contour is created by removing a dimension from a 3D object, which got us thinking, is it possible to insert a dimension to an image to make it 3D?
